@@ -1,0 +1,16 @@
+.*\.html
+.*\.ps1
+.*\.txt
+.*\.py
+.*\.svg
+.*\.mkv
+.*\.avi
+.*\.cbr
+.*\.ico
+.*\.png
+.*\.kmz
+.*\.woff
+\.gitignore
+.*#.*
+.*\\a\\.*
+.*shrink\\.*
