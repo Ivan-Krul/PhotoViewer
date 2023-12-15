@@ -3,12 +3,67 @@
 
 <head>
     <title>Photo Viewer</title>
+
+    <style>
+        body{
+            text-align: center;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+        .text {
+            color: #fff;
+        }
+        #number_year {
+            width: 8ch;
+        }
+        #number_month {
+            width: 5ch;
+        }
+        #number_day {
+            width: 5ch;
+        }
+    </style>
 </head>
 
 <body background="Background for PhotoViewer.png">
+<h2 class="text">Photo Viewer</h2>
+<div id="containerFilterTile">
+    <label class="text">Time</label>
+    <input type="number" id="number_year" maxlength="4" onchange=updateDateFilter()>
+    <input type="number" id="number_month" maxlength="2" min="0" max="12" onchange=updateDateFilter()>
+    <input type="number" id="number_day" maxlength="2"  min="0" max="30" onchange=updateDateFilter()>
+</div>
 
 
 <script>
+
+    // global
+    var year = undefined;
+    var month = undefined;
+    var day = undefined;
+
+    function updateDateFilter() {
+        year = document.getElementById("number_year").value;
+        month = document.getElementById("number_month").value;
+        day = document.getElementById("number_day").value;
+
+        console.log(year+"."+month+"."+day)
+    }
+
+    function adaptDateToString(number, digits) {
+        let str = "";
+
+        let stringnum = number.toString();
+
+        for(let i = digits-1; i >= 1; i--) {
+            if(stringnum.length < digits)
+                str+="0";
+        }
+
+        str +=stringnum;
+
+        return str;
+    }
+
 
 </script>
 
