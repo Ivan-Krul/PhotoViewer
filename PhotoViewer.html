@@ -5,67 +5,210 @@
     <title>Photo Viewer</title>
 
     <style>
-        body{
+        body {
             text-align: center;
-            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-        }
-        .text {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
             color: #fff;
         }
+
+        img {
+            max-width: 20vw;
+        }
+
         #number_year {
             width: 8ch;
         }
+
         #number_month {
             width: 5ch;
         }
+
         #number_day {
             width: 5ch;
+        }
+
+        #tablePhotos {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        td{
+            width:20vw;
+            height: 25vh;
         }
     </style>
 </head>
 
 <body background="Background for PhotoViewer.png">
-<h2 class="text">Photo Viewer</h2>
-<div id="containerFilterTile">
-    <label class="text">Time</label>
-    <input type="number" id="number_year" maxlength="4" onchange=updateDateFilter()>
-    <input type="number" id="number_month" maxlength="2" min="0" max="12" onchange=updateDateFilter()>
-    <input type="number" id="number_day" maxlength="2"  min="0" max="30" onchange=updateDateFilter()>
-</div>
 
+    <h2>Photo Viewer</h2>
+    <div id="containerFilterTile">
+        <label>Time</label>
+        <input type="number" id="number_year" maxlength="4" onchange=updateDateFilter()>
+        <input type="number" id="number_month" maxlength="2" min="0" max="12" onchange=updateDateFilter()>
+        <input type="number" id="number_day" maxlength="2" min="0" max="30" onchange=updateDateFilter()>
+        <button id="button_update" onclick=updatePhotos()>Update</button>
+    </div>
 
-<script>
+    <div id="containerPhotos">
+        <table id="tablePhotos">
 
-    // global
-    var year = undefined;
-    var month = undefined;
-    var day = undefined;
+        </table>
+    </div>
 
-    function updateDateFilter() {
-        year = document.getElementById("number_year").value;
-        month = document.getElementById("number_month").value;
-        day = document.getElementById("number_day").value;
+    <script>
 
-        console.log(year+"."+month+"."+day)
-    }
+        // global
+        var year = undefined;
+        var month = undefined;
+        var day = undefined;
+        var photos = [];
 
-    function adaptDateToString(number, digits) {
-        let str = "";
+        function initDateFilter() {
+            let date = new Date();
 
-        let stringnum = number.toString();
+            year = date.getFullYear();
+            month = date.getMonth() + 1;
+            day = date.getDate();
 
-        for(let i = digits-1; i >= 1; i--) {
-            if(stringnum.length < digits)
-                str+="0";
+            setDateFilter();
         }
 
-        str +=stringnum;
+        function setDateFilter() {
+            document.getElementById("number_year").value = year;
+            document.getElementById("number_month").value = month;
+            document.getElementById("number_day").value = day;
+        }
 
-        return str;
-    }
+        function updateDateFilter() {
+            year = document.getElementById("number_year").value;
+            month = document.getElementById("number_month").value;
+            day = document.getElementById("number_day").value;
 
+            console.log(adaptDateToString(year, 4) + "." + adaptDateToString(month, 2) + "." + adaptDateToString(day, 2))
+        }
 
-</script>
+        function readFromFileURL(fileURL) {
+            return new Promise((resolve, reject) => {
+                fetch(fileURL)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const text = event.target.result;
+                            resolve(text);
+                        };
+                        reader.onerror = function (event) {
+                            console.error("Error reading file:", event.target.error);
+                            reject(event.target.error);
+                        };
+                        reader.readAsText(blob);
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        reject(error);
+                    });
+            });
+        }
+
+        function convertLinkToName(link = "") {
+            let split = link.split("\\");
+            const filename = split[split.length - 1];
+            const dots = filename.split(".");
+            let name = "";
+            for (let i = 0; i < dots.length - 1; i++) {
+                name += dots[i];
+            }
+            return name;
+        }
+
+        function adaptDateToString(number, digits) {
+            let str = "";
+
+            let stringnum = number.toString();
+
+            for (let i = digits - 1; i >= 1; i--) {
+                if (stringnum.length < digits)
+                    str += "0";
+            }
+
+            str += stringnum;
+
+            return str;
+        }
+
+        function setTable(colomns, rows) {
+            let table = document.getElementById("tablePhotos");
+            table.innerHTML="";
+
+            for(let row = 0; row < rows; row++) {
+                let rowInstance = document.createElement("tr");
+
+                for(let colomn = 0; colomn < colomns; colomn++) {
+                    let colomnInstance = document.createElement("td");
+                    let image = document.createElement("img");
+                    colomnInstance.appendChild(image);
+                    rowInstance.appendChild(colomnInstance);
+                }
+
+                table.appendChild(rowInstance);
+            }
+
+        }
+
+        function setTableContentImage(list) {
+            let table = document.getElementById("tablePhotos");
+            let rows = table.children;
+
+            for(let row = 0; row < rows.length; row++) {
+                let rowInstance = rows[row];
+                let colomns = rowInstance.children;
+
+                for(let colomn = 0; colomn < colomns.length; colomn++) {
+                    let colomnInstance = colomns[colomn];
+                    console.log((colomn + row * colomns.length) + ": " + list[colomn + row * colomns.length]);
+                    colomnInstance.firstChild.src= list[colomn + row * colomns.length];
+                }
+
+                table.appendChild(rowInstance);
+            }
+        }
+
+        function filterPhotosByDate() {
+            return photos.filter((element) => { 
+                if(year === undefined || year === 0) {
+                    return true;
+                }
+                else {
+                    if(month === undefined || month === 0) {
+                        return element.indexOf(year.toString() + "\\") !== -1;
+                    }
+                    else {
+                        if(day === undefined || day === 0) {
+                            return element.indexOf(year.toString() + "\\" + month.toString() + "\\") !== -1;
+                        }
+                        else {
+                            return element.indexOf(year.toString() + adaptDateToString(month.toString(),2)+adaptDateToString(day,2)) !== -1;
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePhotos() {
+            setTable(5,5);
+            setTableContentImage(filterPhotosByDate());
+        }
+
+        async function main() {
+            initDateFilter();
+            photos = (await readFromFileURL("content.txt")).split("\n");
+            setTable(5,5);
+            setTableContentImage(filterPhotosByDate());
+        }
+
+        main();
+    </script>
 
 </body>
 

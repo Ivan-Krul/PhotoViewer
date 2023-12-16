@@ -10,6 +10,9 @@
 .*\.png
 .*\.kmz
 .*\.woff
+.*\.mp4
+.*\.7z
+.*\.srt
 \.gitignore
 .*#.*
 .*\\a\\.*
