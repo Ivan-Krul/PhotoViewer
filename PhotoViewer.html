@@ -70,8 +70,8 @@
     </div>
 
     <div id="containerOptions">
-        <input type="number" id="number_maxColomns">
-        <input type="number" id="number_maxRows">
+        <label>Max Rows: </label>
+        <input type="number" id="number_maxRows" value="5">
     </div>
 
     <div id="popup"></div>
@@ -249,7 +249,7 @@
 
         function updatePhotos() {
             let filtered = filterPhotosByDate();
-            let rows = Math.ceil(filtered.length / maxColomns);
+            let rows = Math.min(Math.ceil(filtered.length / maxColomns), document.getElementById("number_maxRows").value);
             setTable(maxColomns, rows);
             setTableContentImage(filtered);
         }
